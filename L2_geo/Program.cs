@@ -51,23 +51,23 @@ namespace L2_geo
             double AO = A.getDist(O);
             double BO = B.getDist(O);
 
-            double p = 0.5 * (AB + AO + BO);
-            double h = (2 * (Math.Sqrt(p * (p - AB) * (p - AO) * (p - BO)))) / AB;//длина опущенного перпендикуляра
-            Console.WriteLine(h);
-
-            if (((AO - circle.radius) < EPS) || ((BO - circle.radius) < EPS))//(AO == circle.radius && BO == circle.radius)// //
+            if ((Math.Abs(AO - circle.radius) <= EPS) && (Math.Abs(BO - circle.radius) <= EPS))//(AO == circle.radius && BO == circle.radius)// //Если обе крайние точки отрезка лежат на окружности
             {
                 Console.WriteLine("Крайние точки отрезка лежат на окружности");
             }
             else if (AO > circle.radius && BO > circle.radius)//Если обе крайние точки отрезка лежат вне окружности
             {
-                Vector vAO = new Vector(A, O);//P1M
-                Vector vAB = new Vector(A, B);//P1P2
+                double p = 0.5 * (AB + AO + BO);
+                double h = (2 * (Math.Sqrt(p * (p - AB) * (p - AO) * (p - BO)))) / AB;//длина опущенного перпендикуляра
+                //Console.WriteLine(h);
+
+                Vector vAO = new Vector(A, O);
+                Vector vAB = new Vector(A, B);
 
                 double r1 = vAO.ScalarMultiply(vAB);
 
-                Vector vBO = new Vector(B, O);//P2M
-                Vector vBA = new Vector(B, A);//P2P1
+                Vector vBO = new Vector(B, O);
+                Vector vBA = new Vector(B, A);
                 double r2 = vBO.ScalarMultiply(vBA);
 
                 if (r1 < 0 || r2 < 0 || (h - circle.radius) > EPS)//Если одно из скалярынх произведений меньше нуля, то опущенный перпендикуляр не попадает на отрезок или если расстояния от отрезка до окружности больше радиуса
@@ -75,7 +75,7 @@ namespace L2_geo
                     //Из этого следует, что отрезок вне окружности
                     Console.WriteLine("Отрезок находится вне окружности");
                 }
-                else if(Math.Abs(h - circle.radius) < EPS)//if(h == circle.radius)
+                else if(Math.Abs(h - circle.radius) <= EPS)//if(h == circle.radius)
                 {
                     Console.WriteLine("Отрезок касается окружности");
                 }
@@ -84,24 +84,50 @@ namespace L2_geo
                     Console.WriteLine("Отрезок пересекает окружность в двух точках");
                 }
             }
-            else if(AO > circle.radius || BO > circle.radius)//Если хотя бы одна из точек отрезка лежит вне окружности
-            {
-                if (((AO - circle.radius) < EPS) || ((BO - circle.radius) < EPS)) //(AO == circle.radius || BO == circle.radius)
-                {
-                    Console.WriteLine("Одна из крайних точек отрезка лежит на окружности, вторая находится снаружи");
-                }
-                else
-                {
-                    Console.WriteLine("Одна из крайних точек отрезка лежит внутри окружности, вторая находится снаружи");
-                }
-            }
-            else if(AO < circle.radius && BO < circle.radius)//если крайние точки лежат внутри окружности
+            else if (AO < circle.radius && BO < circle.radius)//если крайние точки лежат внутри окружности
             {
                 Console.WriteLine("Отрезок лежит внутри окружности");
             }
-            else //if (AO == circle.radius || BO == circle.radius)
+            else//иначе одна из точек либо на окружности, либо внутри, либо снаружи
             {
-                Console.WriteLine("Одна из крайних точек отрезка лежит на окружности, вторая находится внутри");
+                if (AO > circle.radius || BO > circle.radius)//Если хотя бы одна из точек отрезка лежит снаружи
+                {
+                    //значит вторая либо внутри, либо на окружности
+                    if (AO < circle.radius || BO < circle.radius)//если внутри
+                    {
+                        Console.WriteLine("Отрезок пересекает окружность в одной точке");
+                    }
+                    else//иначе следует, что вторая точка лежит на окружности
+                    {
+                        //если она лежит на окружности, необходимо узнать пересекает ли отрезок окружность
+                        //Для этого вычислим скалярное произведение векторов
+
+                        Vector vAO = new Vector(A, O);
+                        Vector vAB = new Vector(A, B);
+
+                        double r1 = vAO.ScalarMultiply(vAB);
+
+                        Vector vBO = new Vector(B, O);
+                        Vector vBA = new Vector(B, A);
+                        double r2 = vBO.ScalarMultiply(vBA);
+
+                        if (r1 > 0 && r2 > 0)//Если оба скалярных произведений больше нуля, то углы OAB и OBA - острые, значит отрезок пересекает окружность
+                        {
+                            Console.WriteLine("Отрезок пересекает окружность в одной точке. Вторая точка лежит на окружности.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Отрезок находится одной точкой на окружности. Вторая лежит снаружи");
+                        }
+
+                    }
+                }
+                else
+                {
+                    //иначе из этого следует, что одна точка внутри окружности. Вторая на ней
+                    //т.к. проверка условия, когда обе точки на/внутри окружности, уже проводилась
+                    Console.WriteLine("Одна из крайних точек отрезка лежит на окружности, вторая находится внутри");
+                }
             }
 
             Console.ReadKey();
